@@ -46,27 +46,39 @@
     light.position.set(5, 10, 7.5);
     scene.add(light);
 
+    const ambient = new THREE.AmbientLight(0xffffff, 0.3);
+    scene.add(ambient);
+
     const loader = new GLTFLoader();
     let solgaleo;
-    loader.load('solgaleo/solgaleo.glb', (gltf) => {
-      solgaleo = gltf.scene;
+    loader.load(
+      'solgaleo/solgaleo.glb',
+      (gltf) => {
+        solgaleo = gltf.scene;
 
-      // Scale model to reasonable size
-      const box = new THREE.Box3().setFromObject(solgaleo);
-      const size = box.getSize(new THREE.Vector3()).length();
-      const scale = 2 / size;
-      solgaleo.scale.setScalar(scale);
+        // Scale model to reasonable size and center it
+        const box = new THREE.Box3().setFromObject(solgaleo);
+        const size = box.getSize(new THREE.Vector3()).length();
+        const scale = 2 / size;
+        solgaleo.scale.setScalar(scale);
 
-      // subtle emissive glow
-      solgaleo.traverse((child) => {
-        if (child.isMesh && child.material && 'emissive' in child.material) {
-          child.material.emissive = new THREE.Color(0xffddaa);
-          child.material.emissiveIntensity = 0.4;
-        }
-      });
+        box.setFromObject(solgaleo);
+        const center = box.getCenter(new THREE.Vector3());
+        solgaleo.position.sub(center);
 
-      scene.add(solgaleo);
-    });
+        // subtle emissive glow
+        solgaleo.traverse((child) => {
+          if (child.isMesh && child.material && 'emissive' in child.material) {
+            child.material.emissive = new THREE.Color(0xffddaa);
+            child.material.emissiveIntensity = 0.4;
+          }
+        });
+
+        scene.add(solgaleo);
+      },
+      undefined,
+      (err) => console.error('Failed to load model', err)
+    );
 
     // Post-processing for bloom effect
     const composer = new EffectComposer(renderer);
