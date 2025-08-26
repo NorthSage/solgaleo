@@ -47,6 +47,7 @@
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 0); // ensure transparent background
     document.body.appendChild(renderer.domElement);
 
     const light = new THREE.DirectionalLight(0xffffff, 1);
@@ -58,44 +59,68 @@
 
     const loader = new GLTFLoader();
     let solgaleo;
-    const modelPaths = ['./solgaleo/solgaleo.glb', './solgaleo/gltf/scene.gltf'];
+    let mixer;
+    const animationNames = ['solgaleo_idle', 'solgaleo_run', 'solgaleo_attack1', 'solgaleo_attack2'];
+    const actions = [];
 
-    function loadModel(index) {
-      if (index >= modelPaths.length) return;
-      loader.load(
-        modelPaths[index],
-        (gltf) => {
-          solgaleo = gltf.scene;
+    loader.load(
+      './solgaleo/solgaleo2/source/model.gltf',
+      (gltf) => {
+        solgaleo = gltf.scene;
 
-          // Scale model to reasonable size and center it
-          const box = new THREE.Box3().setFromObject(solgaleo);
-          const size = box.getSize(new THREE.Vector3()).length();
-          const scale = 2 / size;
-          solgaleo.scale.setScalar(scale);
+        // Scale model to reasonable size and center it
+        const box = new THREE.Box3().setFromObject(solgaleo);
+        const size = box.getSize(new THREE.Vector3()).length();
+        const scale = 2 / size;
+        solgaleo.scale.setScalar(scale);
 
-          box.setFromObject(solgaleo);
-          const center = box.getCenter(new THREE.Vector3());
-          solgaleo.position.sub(center);
+        box.setFromObject(solgaleo);
+        const center = box.getCenter(new THREE.Vector3());
+        solgaleo.position.sub(center);
 
-          // subtle emissive glow
-          solgaleo.traverse((child) => {
-            if (child.isMesh && child.material && 'emissive' in child.material) {
-              child.material.emissive = new THREE.Color(0xffddaa);
-              child.material.emissiveIntensity = 0.4;
-            }
-          });
+        // subtle emissive glow
+        solgaleo.traverse((child) => {
+          if (child.isMesh && child.material && 'emissive' in child.material) {
+            child.material.emissive = new THREE.Color(0xffddaa);
+            child.material.emissiveIntensity = 0.4;
+          }
+        });
 
-          scene.add(solgaleo);
-        },
-        undefined,
-        (err) => {
-          console.error('Failed to load', modelPaths[index], err);
-          loadModel(index + 1);
-        }
-      );
+        scene.add(solgaleo);
+
+        // setup animations
+        mixer = new THREE.AnimationMixer(solgaleo);
+        animationNames.forEach((name) => {
+          const clip = THREE.AnimationClip.findByName(gltf.animations, name);
+          if (clip) {
+            actions.push(mixer.clipAction(clip));
+          }
+        });
+        actions.forEach((a) => {
+          a.clampWhenFinished = true;
+          a.loop = THREE.LoopOnce;
+        });
+
+        playRandomAnimation();
+      },
+      undefined,
+      (err) => {
+        console.error('Failed to load model', err);
+      }
+    );
+
+    let activeAction;
+    function playRandomAnimation() {
+      if (!actions.length) return;
+      const nextAction = actions[Math.floor(Math.random() * actions.length)];
+      if (activeAction) {
+        activeAction.crossFadeTo(nextAction, 0.5, false);
+      }
+      nextAction.reset().play();
+      activeAction = nextAction;
+      const duration = nextAction.getClip().duration * 1000;
+      setTimeout(playRandomAnimation, duration);
     }
-
-    loadModel(0);
 
     // Post-processing for bloom effect
     const composer = new EffectComposer(renderer);
@@ -114,7 +139,10 @@
 
     function animate() {
       requestAnimationFrame(animate);
+      const delta = clock.getDelta();
       const t = clock.getElapsedTime();
+
+      if (mixer) mixer.update(delta);
 
       if (solgaleo) {
         // Floating motion
