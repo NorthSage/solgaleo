@@ -2,16 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Solgaleo Showcase</title>
   <style>
     html, body {
       margin: 0;
-      height: 100%;
-      overflow: hidden;
-      background: transparent;
+      padding: 0;
+      overflow-x: hidden;
+      background: #000;
+    }
+    #model-container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
     }
     #bgVideo {
-      position: fixed;
+      position: absolute;
       top: 0;
       left: 0;
       width: 100%;
@@ -21,9 +27,17 @@
     }
     canvas {
       display: block;
-      position: fixed;
-      top: 0;
-      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    #card-section {
+      width: 100%;
+    }
+    #card {
+      width: 100%;
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 0 20px #fff) drop-shadow(0 0 40px #fff);
     }
   </style>
   <script type="importmap">
@@ -35,24 +49,31 @@
   </script>
 </head>
 <body>
-  <video id="bgVideo" autoplay muted loop playsinline>
-    <source src="background.webm" type="video/webm" />
-  </video>
+  <div id="model-container">
+    <video id="bgVideo" autoplay muted loop playsinline>
+      <source src="background.webm" type="video/webm" />
+    </video>
+  </div>
+  <section id="card-section">
+    <img src="card.png" alt="card" id="card" />
+  </section>
   <script type="module">
     import * as THREE from './libs/three.module.js';
     import { GLTFLoader } from './libs/loaders/GLTFLoader.js';
+    const container = document.getElementById('model-container');
     const bgVideo = document.getElementById('bgVideo');
     bgVideo.play().catch(() => {});
     bgVideo.addEventListener('loadeddata', () => bgVideo.play());
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 1.5, 4);
+    camera.position.y = 1.5;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000, 0); // ensure transparent background
-    document.body.appendChild(renderer.domElement);
+    container.appendChild(renderer.domElement);
 
     const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
     hemi.position.set(0, 20, 0);
@@ -79,7 +100,7 @@
         // Scale model to reasonable size and center it
         const box = new THREE.Box3().setFromObject(solgaleo);
         const size = box.getSize(new THREE.Vector3()).length();
-        const scale = 4 / size;
+        const scale = 3 / size;
         solgaleo.scale.setScalar(scale);
 
         box.setFromObject(solgaleo);
@@ -143,7 +164,7 @@
         solgaleo.position.y = 0.5 + Math.sin(t) * 0.25;
 
         // Camera slowly orbiting around the model
-        const radius = 4;
+        const radius = 5;
         camera.position.x = Math.sin(t * 0.2) * radius;
         camera.position.z = Math.cos(t * 0.2) * radius;
         camera.lookAt(solgaleo.position);
