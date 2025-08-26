@@ -36,7 +36,7 @@
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 1.5, 5);
+    camera.position.set(0, 1.5, 3);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -51,34 +51,42 @@
 
     const loader = new GLTFLoader();
     let solgaleo;
-    loader.load(
-      'solgaleo/solgaleo.glb',
-      (gltf) => {
-        solgaleo = gltf.scene;
+    const modelPaths = ['solgaleo/solgaleo.glb', 'solgaleo/gltf/scene.gltf'];
+    function loadModel(index = 0) {
+      if (index >= modelPaths.length) {
+        console.error('Failed to load model');
+        return;
+      }
+      loader.load(
+        modelPaths[index],
+        (gltf) => {
+          solgaleo = gltf.scene;
 
-        // Scale model to reasonable size and center it
-        const box = new THREE.Box3().setFromObject(solgaleo);
-        const size = box.getSize(new THREE.Vector3()).length();
-        const scale = 2 / size;
-        solgaleo.scale.setScalar(scale);
+          // Scale model to reasonable size and center it
+          const box = new THREE.Box3().setFromObject(solgaleo);
+          const size = box.getSize(new THREE.Vector3()).length();
+          const scale = 4 / size;
+          solgaleo.scale.setScalar(scale);
 
-        box.setFromObject(solgaleo);
-        const center = box.getCenter(new THREE.Vector3());
-        solgaleo.position.sub(center);
+          box.setFromObject(solgaleo);
+          const center = box.getCenter(new THREE.Vector3());
+          solgaleo.position.sub(center);
 
-        // subtle emissive glow
-        solgaleo.traverse((child) => {
-          if (child.isMesh && child.material && 'emissive' in child.material) {
-            child.material.emissive = new THREE.Color(0xffddaa);
-            child.material.emissiveIntensity = 0.4;
-          }
-        });
+          // subtle emissive glow
+          solgaleo.traverse((child) => {
+            if (child.isMesh && child.material && 'emissive' in child.material) {
+              child.material.emissive = new THREE.Color(0xffddaa);
+              child.material.emissiveIntensity = 0.4;
+            }
+          });
 
-        scene.add(solgaleo);
-      },
-      undefined,
-      (err) => console.error('Failed to load model', err)
-    );
+          scene.add(solgaleo);
+        },
+        undefined,
+        () => loadModel(index + 1)
+      );
+    }
+    loadModel();
 
     // Post-processing for bloom effect
     const composer = new EffectComposer(renderer);
@@ -104,7 +112,7 @@
         solgaleo.position.y = Math.sin(t) * 0.2;
 
         // Camera slowly orbiting around the model
-        const radius = 5;
+        const radius = 3;
         camera.position.x = Math.sin(t * 0.2) * radius;
         camera.position.z = Math.cos(t * 0.2) * radius;
         camera.lookAt(solgaleo.position);
