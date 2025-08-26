@@ -51,34 +51,44 @@
 
     const loader = new GLTFLoader();
     let solgaleo;
-    loader.load(
-      'solgaleo/solgaleo.glb',
-      (gltf) => {
-        solgaleo = gltf.scene;
+    const modelPaths = ['solgaleo/solgaleo.glb'];
 
-        // Scale model to reasonable size and center it
-        const box = new THREE.Box3().setFromObject(solgaleo);
-        const size = box.getSize(new THREE.Vector3()).length();
-        const scale = 2 / size;
-        solgaleo.scale.setScalar(scale);
+    function loadModel(index) {
+      if (index >= modelPaths.length) return;
+      loader.load(
+        modelPaths[index],
+        (gltf) => {
+          solgaleo = gltf.scene;
 
-        box.setFromObject(solgaleo);
-        const center = box.getCenter(new THREE.Vector3());
-        solgaleo.position.sub(center);
+          // Scale model to reasonable size and center it
+          const box = new THREE.Box3().setFromObject(solgaleo);
+          const size = box.getSize(new THREE.Vector3()).length();
+          const scale = 2 / size;
+          solgaleo.scale.setScalar(scale);
 
-        // subtle emissive glow
-        solgaleo.traverse((child) => {
-          if (child.isMesh && child.material && 'emissive' in child.material) {
-            child.material.emissive = new THREE.Color(0xffddaa);
-            child.material.emissiveIntensity = 0.4;
-          }
-        });
+          box.setFromObject(solgaleo);
+          const center = box.getCenter(new THREE.Vector3());
+          solgaleo.position.sub(center);
 
-        scene.add(solgaleo);
-      },
-      undefined,
-      (err) => console.error('Failed to load model', err)
-    );
+          // subtle emissive glow
+          solgaleo.traverse((child) => {
+            if (child.isMesh && child.material && 'emissive' in child.material) {
+              child.material.emissive = new THREE.Color(0xffddaa);
+              child.material.emissiveIntensity = 0.4;
+            }
+          });
+
+          scene.add(solgaleo);
+        },
+        undefined,
+        (err) => {
+          console.error('Failed to load', modelPaths[index], err);
+          loadModel(index + 1);
+        }
+      );
+    }
+
+    loadModel(0);
 
     // Post-processing for bloom effect
     const composer = new EffectComposer(renderer);
