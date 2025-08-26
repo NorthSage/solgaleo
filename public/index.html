@@ -56,72 +56,59 @@
     let actions = [];
     let activeAction;
     const clipNames = ['solgaleo_idle', 'solgaleo_run', 'solgaleo_attack1', 'solgaleo_attack2'];
-    const modelPaths = [
-      './solgaleo/solgaleo2/source/model.gltf',
-      './solgaleo/solgaleo.glb',
-      './solgaleo/gltf/scene.gltf'
-    ];
 
-    function loadModel(index) {
-      if (index >= modelPaths.length) return;
-      loader.load(
-        modelPaths[index],
-        (gltf) => {
-          solgaleo = gltf.scene;
+    loader.load(
+      'solgaleo/solgaleo2/source/model.gltf',
+      (gltf) => {
+        solgaleo = gltf.scene;
 
-          // Scale model to reasonable size and center it
-          const box = new THREE.Box3().setFromObject(solgaleo);
-          const size = box.getSize(new THREE.Vector3()).length();
-          const scale = 2 / size;
-          solgaleo.scale.setScalar(scale);
+        // Scale model to reasonable size and center it
+        const box = new THREE.Box3().setFromObject(solgaleo);
+        const size = box.getSize(new THREE.Vector3()).length();
+        const scale = 2 / size;
+        solgaleo.scale.setScalar(scale);
 
-          box.setFromObject(solgaleo);
-          const center = box.getCenter(new THREE.Vector3());
-          solgaleo.position.sub(center);
+        box.setFromObject(solgaleo);
+        const center = box.getCenter(new THREE.Vector3());
+        solgaleo.position.sub(center);
 
-          // subtle emissive glow
-          solgaleo.traverse((child) => {
-            if (child.isMesh && child.material && 'emissive' in child.material) {
-              child.material.emissive = new THREE.Color(0xffddaa);
-              child.material.emissiveIntensity = 0.4;
-            }
+        // subtle emissive glow
+        solgaleo.traverse((child) => {
+          if (child.isMesh && child.material && 'emissive' in child.material) {
+            child.material.emissive = new THREE.Color(0xffddaa);
+            child.material.emissiveIntensity = 0.4;
+          }
+        });
+
+        // Setup animations
+        mixer = new THREE.AnimationMixer(solgaleo);
+        actions = clipNames
+          .map((name) => THREE.AnimationClip.findByName(gltf.animations, name))
+          .filter(Boolean)
+          .map((clip) => {
+            const action = mixer.clipAction(clip);
+            action.clampWhenFinished = true;
+            return action;
           });
 
-          // Setup animations
-          mixer = new THREE.AnimationMixer(solgaleo);
-          actions = clipNames
-            .map((name) => THREE.AnimationClip.findByName(gltf.animations, name))
-            .filter(Boolean)
-            .map((clip) => {
-              const action = mixer.clipAction(clip);
-              action.clampWhenFinished = true;
-              return action;
-            });
-
-          function playRandomAnimation() {
-            if (!actions.length) return;
-            const next = actions[Math.floor(Math.random() * actions.length)];
-            if (activeAction) {
-              activeAction.fadeOut(0.3);
-            }
-            activeAction = next;
-            activeAction.reset().fadeIn(0.3).play();
+        function playRandomAnimation() {
+          if (!actions.length) return;
+          const next = actions[Math.floor(Math.random() * actions.length)];
+          if (activeAction) {
+            activeAction.fadeOut(0.3);
           }
-
-          mixer.addEventListener('finished', playRandomAnimation);
-          playRandomAnimation();
-
-          scene.add(solgaleo);
-        },
-        undefined,
-        (err) => {
-          console.error('Failed to load', modelPaths[index], err);
-          loadModel(index + 1);
+          activeAction = next;
+          activeAction.reset().fadeIn(0.3).play();
         }
-      );
-    }
 
-    loadModel(0);
+        mixer.addEventListener('finished', playRandomAnimation);
+        playRandomAnimation();
+
+        scene.add(solgaleo);
+      },
+      undefined,
+      (err) => console.error('Failed to load model', err)
+    );
 
     // Post-processing for bloom effect
     const composer = new EffectComposer(renderer);
