@@ -41,26 +41,28 @@
   <script type="module">
     import * as THREE from './libs/three.module.js';
     import { GLTFLoader } from './libs/loaders/GLTFLoader.js';
-    import { EffectComposer } from './libs/postprocessing/EffectComposer.js';
-    import { RenderPass } from './libs/postprocessing/RenderPass.js';
-    import { UnrealBloomPass } from './libs/postprocessing/UnrealBloomPass.js';
     const bgVideo = document.getElementById('bgVideo');
     bgVideo.play().catch(() => {});
+    bgVideo.addEventListener('loadeddata', () => bgVideo.play());
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 1.5, 3);
+    camera.position.set(0, 1.5, 4);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000, 0); // ensure transparent background
     document.body.appendChild(renderer.domElement);
 
-    const light = new THREE.DirectionalLight(0xffffff, 1);
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
+    hemi.position.set(0, 20, 0);
+    scene.add(hemi);
+
+    const light = new THREE.DirectionalLight(0xffffff, 1.2);
     light.position.set(5, 10, 7.5);
     scene.add(light);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 0.3);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambient);
 
     const loader = new GLTFLoader();
@@ -121,17 +123,10 @@
       setTimeout(playRandomAnimation, duration);
     }
 
-    // Post-processing for bloom effect
-    const composer = new EffectComposer(renderer);
-    composer.addPass(new RenderPass(scene, camera));
-    const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-    composer.addPass(bloom);
-
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
-      composer.setSize(window.innerWidth, window.innerHeight);
     });
 
     const clock = new THREE.Clock();
@@ -148,13 +143,13 @@
         solgaleo.position.y = 0.5 + Math.sin(t) * 0.25;
 
         // Camera slowly orbiting around the model
-        const radius = 3;
+        const radius = 4;
         camera.position.x = Math.sin(t * 0.2) * radius;
         camera.position.z = Math.cos(t * 0.2) * radius;
         camera.lookAt(solgaleo.position);
       }
 
-      composer.render();
+      renderer.render(scene, camera);
     }
 
     animate();
