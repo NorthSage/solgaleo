@@ -1,0 +1,11 @@
+Model Information:
+* title:	Solgaleo
+* source:	https://sketchfab.com/3d-models/solgaleo-9ee02368ea2c462fb54a2e4211363a1e
+* author:	Galanodel (https://sketchfab.com/Galanodel)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Solgaleo" (https://sketchfab.com/3d-models/solgaleo-9ee02368ea2c462fb54a2e4211363a1e) by Galanodel (https://sketchfab.com/Galanodel) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
