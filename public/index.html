@@ -37,6 +37,7 @@
   <script type="module">
     import * as THREE from './libs/three.module.js';
     import { GLTFLoader } from './libs/loaders/GLTFLoader.js';
+    import { OrbitControls } from './libs/controls/OrbitControls.js';
     import { EffectComposer } from './libs/postprocessing/EffectComposer.js';
     import { RenderPass } from './libs/postprocessing/RenderPass.js';
     import { UnrealBloomPass } from './libs/postprocessing/UnrealBloomPass.js';
@@ -49,6 +50,10 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.5;
+
     const light = new THREE.DirectionalLight(0xffffff, 1);
     light.position.set(5, 10, 7.5);
     scene.add(light);
@@ -57,8 +62,10 @@
     scene.add(ambient);
 
     const loader = new GLTFLoader();
-    let solgaleo;
-    const modelPaths = ['./solgaleo/solgaleo.glb', './solgaleo/gltf/scene.gltf'];
+    let solgaleo, mixer, activeAction;
+    const actions = {};
+    const animationNames = ['solgaleo_idle', 'solgaleo_run', 'solgaleo_attack1', 'solgaleo_attack2'];
+    const modelPaths = ['./solgaleo/solgaleo2/source/model.gltf', './solgaleo/solgaleo.glb', './solgaleo/gltf/scene.gltf'];
 
     function loadModel(index) {
       if (index >= modelPaths.length) return;
@@ -85,7 +92,23 @@
             }
           });
 
+          mixer = new THREE.AnimationMixer(solgaleo);
+          gltf.animations.forEach((clip) => {
+            if (animationNames.includes(clip.name)) {
+              const action = mixer.clipAction(clip);
+              action.setLoop(THREE.LoopOnce, 1);
+              action.clampWhenFinished = true;
+              actions[clip.name] = action;
+            }
+          });
+
+          if (Object.keys(actions).length) {
+            mixer.addEventListener('finished', playRandomAnimation);
+            playRandomAnimation();
+          }
+
           scene.add(solgaleo);
+          controls.target.copy(solgaleo.position);
         },
         undefined,
         (err) => {
@@ -96,6 +119,18 @@
     }
 
     loadModel(0);
+
+    function playRandomAnimation() {
+      const candidates = animationNames.filter((n) => actions[n] && actions[n] !== activeAction);
+      const name = candidates[Math.floor(Math.random() * candidates.length)];
+      const nextAction = actions[name];
+      if (!nextAction) return;
+      if (activeAction) {
+        activeAction.stop();
+      }
+      nextAction.reset().play();
+      activeAction = nextAction;
+    }
 
     // Post-processing for bloom effect
     const composer = new EffectComposer(renderer);
@@ -114,19 +149,14 @@
 
     function animate() {
       requestAnimationFrame(animate);
-      const t = clock.getElapsedTime();
+      const delta = clock.getDelta();
 
       if (solgaleo) {
-        // Floating motion
-        solgaleo.position.y = Math.sin(t) * 0.2;
-
-        // Camera slowly orbiting around the model
-        const radius = 5;
-        camera.position.x = Math.sin(t * 0.2) * radius;
-        camera.position.z = Math.cos(t * 0.2) * radius;
-        camera.lookAt(solgaleo.position);
+        solgaleo.position.y = Math.sin(clock.elapsedTime) * 0.2;
       }
 
+      if (mixer) mixer.update(delta);
+      controls.update();
       composer.render();
     }
 
