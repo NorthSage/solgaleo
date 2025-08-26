@@ -25,7 +25,7 @@
 </head>
 <body>
   <video id="bgVideo" autoplay muted loop playsinline>
-    <source src="public/background.webm" type="video/webm" />
+    <source src="background.webm" type="video/webm" />
   </video>
   <script type="module">
     import * as THREE from 'https://unpkg.com/three@0.159.0/build/three.module.js';
@@ -48,7 +48,7 @@
 
     const loader = new GLTFLoader();
     let solgaleo;
-    loader.load('public/solgaleo/solgaleo.glb', (gltf) => {
+    loader.load('solgaleo/solgaleo.glb', (gltf) => {
       solgaleo = gltf.scene;
 
       // Scale model to reasonable size
