@@ -87,7 +87,7 @@
     <video id="bgVideo" autoplay muted loop playsinline>
       <source src="background.webm" type="video/webm" />
     </video>
-    <audio id="bgAudio" src="pokemonmusic.mp3" autoplay loop></audio>
+    <audio id="bgAudio" src="pokemonmusic.mp3" autoplay loop preload="auto" playsinline></audio>
     <button id="muteBtn">Mute</button>
     <div id="model-container"></div>
     <img src="Solgaleo Logo.png" alt="Solgaleo logo" id="logo" />
@@ -103,7 +103,15 @@
     const muteBtn = document.getElementById('muteBtn');
     bgVideo.play().catch(() => {});
     bgVideo.addEventListener('loadeddata', () => bgVideo.play());
-    audio.play().catch(() => {});
+    audio.volume = 1;
+    audio.muted = false;
+    audio.play().catch(() => {
+      const resumeAudio = () => {
+        audio.play();
+        document.removeEventListener('click', resumeAudio);
+      };
+      document.addEventListener('click', resumeAudio);
+    });
     muteBtn.addEventListener('click', () => {
       audio.muted = !audio.muted;
       muteBtn.textContent = audio.muted ? 'Unmute' : 'Mute';
@@ -145,7 +153,7 @@
         const box = new THREE.Box3().setFromObject(solgaleo);
         const size = box.getSize(new THREE.Vector3()).length();
         const scale = 3 / size;
-        solgaleo.scale.setScalar(scale);
+        solgaleo.scale.setScalar(scale * 1.2);
 
         box.setFromObject(solgaleo);
         const center = box.getCenter(new THREE.Vector3());
