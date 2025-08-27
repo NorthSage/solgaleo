@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Solgaleo Showcase</title>
+  <link rel="icon" href="favicon.ico" />
   <style>
     html, body {
       margin: 0;
@@ -89,6 +90,17 @@
       cursor: pointer;
       border-radius: 4px;
     }
+    #twitter-link {
+      position: fixed;
+      top: 60px;
+      right: 10px;
+      z-index: 2;
+    }
+    #twitter-link img {
+      width: 40px;
+      height: auto;
+      display: block;
+    }
   </style>
   <script type="importmap">
     {
@@ -103,6 +115,9 @@
       <source src="background.webm" type="video/webm" />
     </video>
     <audio id="bgAudio" src="pokemonmusic.mp3" autoplay loop preload="auto" playsinline></audio>
+    <a id="twitter-link" href="https://x.com/i/communities/1960701697178677379" target="_blank" rel="noopener">
+      <img src="twitter.png" alt="Twitter" />
+    </a>
     <button id="muteBtn">Mute</button>
     <div id="model-container">
       <div id="logo-wrapper">
