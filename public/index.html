@@ -40,12 +40,42 @@
       position: relative;
       width: 100%;
       z-index: 1;
+      text-align: center;
+    }
+    #logo {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 30%;
+      height: auto;
+      display: block;
+      animation: glow 4s linear infinite;
     }
     #card {
       width: 100%;
       height: auto;
       display: block;
-      filter: drop-shadow(0 0 20px #fff) drop-shadow(0 0 40px #fff);
+      animation: glow 4s linear infinite;
+    }
+    @keyframes glow {
+      0%   { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 20px #f2ff00); }
+      25%  { filter: drop-shadow(10px 0 15px #f2ff00) drop-shadow(-10px 0 25px #ffa500); }
+      50%  { filter: drop-shadow(0 0 10px #ffa500) drop-shadow(0 0 30px #f2ff00); }
+      75%  { filter: drop-shadow(-10px 0 15px #f2ff00) drop-shadow(10px 0 25px #ffa500); }
+      100% { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 20px #f2ff00); }
+    }
+    #muteBtn {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 2;
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 4px;
     }
   </style>
   <script type="importmap">
@@ -60,7 +90,11 @@
     <video id="bgVideo" autoplay muted loop playsinline>
       <source src="background.webm" type="video/webm" />
     </video>
-    <div id="model-container"></div>
+    <audio id="bgAudio" src="pokemonmusic.mp3" autoplay loop preload="auto" playsinline></audio>
+    <button id="muteBtn">Mute</button>
+    <div id="model-container">
+      <img src="Solgaleo Logo.png" alt="Solgaleo logo" id="logo" />
+    </div>
     <section id="card-section">
       <img src="card.png" alt="card" id="card" />
     </section>
@@ -69,8 +103,23 @@
     import { GLTFLoader } from './libs/loaders/GLTFLoader.js';
     const container = document.getElementById('model-container');
     const bgVideo = document.getElementById('bgVideo');
+    const audio = document.getElementById('bgAudio');
+    const muteBtn = document.getElementById('muteBtn');
     bgVideo.play().catch(() => {});
     bgVideo.addEventListener('loadeddata', () => bgVideo.play());
+    audio.volume = 1;
+    audio.muted = false;
+    audio.play().catch(() => {
+      const resumeAudio = () => {
+        audio.play();
+        document.removeEventListener('click', resumeAudio);
+      };
+      document.addEventListener('click', resumeAudio);
+    });
+    muteBtn.addEventListener('click', () => {
+      audio.muted = !audio.muted;
+      muteBtn.textContent = audio.muted ? 'Unmute' : 'Mute';
+    });
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -108,7 +157,7 @@
         const box = new THREE.Box3().setFromObject(solgaleo);
         const size = box.getSize(new THREE.Vector3()).length();
         const scale = 3 / size;
-        solgaleo.scale.setScalar(scale);
+        solgaleo.scale.setScalar(scale * 1.35);
 
         box.setFromObject(solgaleo);
         const center = box.getCenter(new THREE.Vector3());
