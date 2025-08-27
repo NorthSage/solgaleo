@@ -101,6 +101,28 @@
       height: auto;
       display: block;
     }
+    #contract-address {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+      color: #fff;
+      font-family: monospace;
+      background: rgba(0,0,0,0.5);
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: all;
+      animation: textGlow 4s linear infinite;
+    }
+    @keyframes textGlow {
+      0%   { text-shadow: 0 0 5px #fff, 0 0 10px #f2ff00; }
+      25%  { text-shadow: 0 0 10px #f2ff00, 0 0 20px #ffa500; }
+      50%  { text-shadow: 0 0 5px #ffa500, 0 0 15px #f2ff00; }
+      75%  { text-shadow: 0 0 10px #f2ff00, 0 0 20px #ffa500; }
+      100% { text-shadow: 0 0 5px #fff, 0 0 10px #f2ff00; }
+    }
   </style>
   <script type="importmap">
     {
@@ -119,6 +141,7 @@
       <img src="twitter.png" alt="Twitter" />
     </a>
     <button id="muteBtn">Mute</button>
+    <div id="contract-address">CpgAZoeNQZFZAWKtK4koriUabVawypJENoLiZiS5N777</div>
     <div id="model-container">
       <div id="logo-wrapper">
         <img src="Solgaleo Logo.png" alt="Solgaleo logo" id="logo" />
@@ -135,6 +158,10 @@
     const bgVideo = document.getElementById('bgVideo');
     const audio = document.getElementById('bgAudio');
     const muteBtn = document.getElementById('muteBtn');
+    const contractAddressEl = document.getElementById('contract-address');
+    contractAddressEl.addEventListener('click', () => {
+      navigator.clipboard.writeText(contractAddressEl.textContent);
+    });
     bgVideo.play().catch(() => {});
     bgVideo.addEventListener('loadeddata', () => bgVideo.play());
     audio.volume = 1;
