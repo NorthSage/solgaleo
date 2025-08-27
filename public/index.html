@@ -42,13 +42,25 @@
       z-index: 1;
       text-align: center;
     }
-    #logo {
+    #logo-wrapper {
       position: absolute;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      width: 30%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #logo {
+      width: 46.875%;
       height: auto;
+      display: block;
+      animation: glow 4s linear infinite;
+    }
+    #logo-jp {
+      width: 42.1875%;
+      height: auto;
+      margin-top: 10px;
       display: block;
       animation: glow 4s linear infinite;
     }
@@ -93,7 +105,10 @@
     <audio id="bgAudio" src="pokemonmusic.mp3" autoplay loop preload="auto" playsinline></audio>
     <button id="muteBtn">Mute</button>
     <div id="model-container">
-      <img src="Solgaleo Logo.png" alt="Solgaleo logo" id="logo" />
+      <div id="logo-wrapper">
+        <img src="Solgaleo Logo.png" alt="Solgaleo logo" id="logo" />
+        <img src="japaneselogo.svg" alt="Japanese Solgaleo logo" id="logo-jp" />
+      </div>
     </div>
     <section id="card-section">
       <img src="card.png" alt="card" id="card" />
