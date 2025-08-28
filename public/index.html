@@ -116,6 +116,29 @@
       user-select: all;
       animation: textGlow 4s linear infinite;
     }
+    #companion-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #companion-container img {
+      width: 100px;
+      height: auto;
+      display: block;
+    }
+    #companion-container a {
+      margin-top: 8px;
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+      text-decoration: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      animation: glow 4s linear infinite;
+    }
     @keyframes textGlow {
       0%   { text-shadow: 0 0 5px #fff, 0 0 10px #f2ff00; }
       25%  { text-shadow: 0 0 10px #f2ff00, 0 0 20px #ffa500; }
@@ -142,6 +165,10 @@
     </a>
     <button id="muteBtn">Mute</button>
     <div id="contract-address">CpgAZoeNQZFZAWKtK4koriUabVawypJENoLiZiS5N777</div>
+    <div id="companion-container">
+      <img src="poketrainer companion.png" alt="PokeTrainer AI Companion" />
+      <a href="https://companion.solgaleo.xyz" target="_blank" rel="noopener">PokeTrainer AI Companion</a>
+    </div>
     <div id="model-container">
       <div id="logo-wrapper">
         <img src="Solgaleo Logo.png" alt="Solgaleo logo" id="logo" />
